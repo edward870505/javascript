@@ -50,7 +50,15 @@ range.methods = {
 }
 
 var r = range(1,3);
+
+
+
 console.log('The result of r.includes(2) is: '+r.includes(2));
 console.log('The result of r.foreach(console.log) is: '+r.foreach(console.log));
 console.log('The result of console.log(r) is: ');
 console.log(r.toString())
+
+//9.5.1 类和类型
+
+console.log('The result of Range.methods.isPrototypeOf(r): ',range.methods.isPrototypeOf(r));
+
