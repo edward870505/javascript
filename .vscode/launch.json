@@ -1,14 +1,14 @@
 {
-    // 使用 IntelliSense 了解相关属性。 
-    // 悬停以查看现有属性的描述。
-    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
-            "program": "${workspaceFolder}\\9.类和模块\\9.1-类和原型\\page214（例9-1：一个简单的JavaScript类）.js"
+            "program": "${workspaceFolder}\\9.类和模块\\9.6-JavaScript面向对象技术\\page231（例子9-7：枚举类型;例子9-8：使用枚举类型表示一副扑克牌）.js"
         }
     ]
 }

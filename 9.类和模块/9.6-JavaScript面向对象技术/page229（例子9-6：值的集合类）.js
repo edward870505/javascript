@@ -1,5 +1,5 @@
 function Set(){ //这是一个构造函数
-    this.values = {};//集合数据保存在对象的属性里
+this.values = {};//集合数据保存在对象的属性里
     this.n = 0;//集合中值的个数
     this.add.apply(this, arguments);//把所有参数都添加进这个集合
 }
@@ -27,6 +27,7 @@ Set.prototype.size = function(){
 }
 
 //遍历集合中的所有元素，在指定的上下文中调用f
+
 Set.prototype.foreach = function(f,context){
     for(var s in this.values){//遍历集合中的所有字符串
         if(this.values.hasOwnProperty(s))//忽略继承的属性
@@ -60,5 +61,4 @@ Set._v2s.next = 100; //设置初始id的值
 var s = new Set();
 s.add(1,'abc',{x:1});
 console.log(s);
-
 
