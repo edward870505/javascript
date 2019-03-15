@@ -32,10 +32,14 @@ Range.prototype = {
     constructor:Range//显示设置构造函数反向引用
 }
 
-var r = new Range(1,3);
-console.log('The result of r.constructor is :',r.constructor);
-console.log('The result of r.includes(2) is: '+r.includes(2));
-console.log('The result of r.foreach(console.log) is: '+r.foreach(console.log));
-console.log('The result of console.log(r) is: ');
-console.log(r.toString())
-console.log('The result of r instanceof Range is: '+ r instanceof Range);
+//var r = new Range(1,3);
+//console.log('The result of r.constructor is :',r.constructor);
+//console.log('The result of r.includes(2) is: '+r.includes(2));
+//console.log('The result of r.foreach(console.log) is: '+r.foreach(console.log));
+//console.log('The result of console.log(r) is: ');
+//console.log(r.toString())
+//console.log('The result of r instanceof Range is: '+ r instanceof Range);
+
+//9.5.4 鸭式辨型(Page 227)
+var lowercase = new Range('a','z');
+

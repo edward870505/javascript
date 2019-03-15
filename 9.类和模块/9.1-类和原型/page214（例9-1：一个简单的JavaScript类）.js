@@ -37,9 +37,6 @@ range.methods = {
     //对于范围内的每个整数都调用一次f
     //这个方法只可用做数字范围
     foreach:function(f){
-        var toffrom = typeof this.from;
-        var tofto = typeof this.to;
-        if(toffrom!=="number" || tofto !=="number") throw TypeError();
         for(var x = Math.ceil(this.from);x<=this.to;x++) {
             console.log(x);
             f(x);
@@ -52,13 +49,20 @@ range.methods = {
 var r = range(1,3);
 
 
+//console.log('The result of r.includes(2) is: '+r.includes(2));
+//console.log('The result of r.foreach(console.log) is: '+r.foreach(console.log));
+//console.log('The result of console.log(r) is: ');
+//console.log(r.toString())
 
-console.log('The result of r.includes(2) is: '+r.includes(2));
-console.log('The result of r.foreach(console.log) is: '+r.foreach(console.log));
-console.log('The result of console.log(r) is: ');
-console.log(r.toString())
+//9.5.1 类和类型
+//console.log('The result of Range.methods.isPrototypeOf(r): ',range.methods.isPrototypeOf(r));
+
+//console.log('The result of r.includes(2) is: '+r.includes(2));
+//console.log('The result of r.foreach(console.log) is: '+r.foreach(console.log));
+//console.log('The result of console.log(r) is: ');
+//console.log(r.toString())
 
 //9.5.1 类和类型
 
-console.log('The result of Range.methods.isPrototypeOf(r): ',range.methods.isPrototypeOf(r));
+//console.log('The result of Range.methods.isPrototypeOf(r): ',range.methods.isPrototypeOf(r));
 
