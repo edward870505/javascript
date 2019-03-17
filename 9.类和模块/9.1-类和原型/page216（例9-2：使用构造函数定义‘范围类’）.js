@@ -20,9 +20,6 @@ Range.prototype = {
     //对于范围内的每个整数都调用一次f
     //这个方法只可用做数字范围
     foreach:function(f){
-        var toffrom = typeof this.from;
-        var tofto = typeof this.to;
-        if(toffrom!=="number" || tofto !=="number") throw TypeError();
         for(var x = Math.ceil(this.from);x<=this.to;x++) {
             f(x);
         };
@@ -31,6 +28,38 @@ Range.prototype = {
     toString: function(){return "("+this.from+"..."+this.to+")"},
     constructor:Range//显示设置构造函数反向引用
 }
+
+// 重写Range类的constructor属性
+Range.prototype.constructor = Range;
+
+Range.prototype.equals = function(that){
+    if(that == null) return false //处理null和undefined
+    if(that.constructor !== Range) return false //处理非Range对象
+    // 当且仅当两个端点相等，才返回true
+    return this.from == that.from && this.to == that.to;
+}
+
+// Page237 Range类compareTo方法
+// Range.prototype.compareTo = function(that){
+    // return this.from - that.from
+// }
+
+// page238 Range类compareTo方法（改良版）
+// 根据下边界来对Range对象排序，如果下边界相等则比较上边界
+// 如果传入非Range值，则抛出异常
+// 当且仅当this.equals(that)时才返回true
+
+Range.prototype.compareTo = function(that){
+    if(!(that instanceof Range))
+        throw new Error("Cant't compare a Range with" + that);
+    var diff = this.from - that.from; //比较下边界
+    if(diff == 0) diff = this.to - that.to;//如果相等，比较上边界
+    return;    
+}
+
+
+
+
 
 //var r = new Range(1,3);
 //console.log('The result of r.constructor is :',r.constructor);
@@ -42,4 +71,7 @@ Range.prototype = {
 
 //9.5.4 鸭式辨型(Page 227)
 var lowercase = new Range('a','z');
+
+// page238 对Range对象组成的数组进行排序
+// ranges.sort(function(a,b){ return a.compareTo(b); });
 
