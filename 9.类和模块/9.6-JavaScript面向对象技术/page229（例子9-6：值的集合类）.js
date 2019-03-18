@@ -295,6 +295,79 @@ SingletonSet.prototype.equals = function(that){
     return that instanceof Set && that.size() == 1 && that.contains(this.member);
 }
 
+// page 245
+/**
+ * NonNullSet是Set的子类，它的成员不能是null和undefined
+ */
+function NonNullSet(){
+    // 仅链接到父类
+    // 作为普通函数调用父类的构造函数来初始化通过该构造函数调用创建的对象
+    Set.apply(this, arguments);
+}
+
+// 将NonNullSet设置为Set的子类
+NonNullSet.prototype = inherit(Set.prototype);
+NonNullSet.prototype.constructor = NonNullSet;
+
+// 为了将null和undefined排除在外，只需重写add()方法
+NonNullSet.prototype.add = function(){
+    // 检查参数是不是null或undefined
+    for(var i=0; i< arguments.length; i++){
+        if(arguments[i] == null)
+            throw new Error("Can't add null or undefined to a NonNullSet");
+    }
+
+    // 调用父类的add()方法以执行实际插入操作
+    return Set.prototype.add.apply(this, arguments);
+}
+
+
+// page 246,类工厂和方法链
+/**
+ * 这个函数返回具体Set类的子类
+ * 并重写该类的add()方法用以对添加的元素做特殊的过滤
+ */
+
+ function filteredSetSubclass(superclass, filter) {
+     var constructor = function () {//子类构造函数
+         superclass.apply(this, arguments);//调用父类构造函数
+     };
+     var proto = constructor.prototype = inherit(superclass.prototype);
+     proto.constructor = constructor;
+     proto.add = function(){
+        //  在添加任何成员之前首先使用过滤器将所有参数进行过滤
+        for(var i =0; i<arguments.length; i++){
+            var v = arguments[i];
+            if(!filter(v)) throw ('value '+v+'rejected by filter');
+        }
+        // 调用父类的add()方法
+        superclass.prototype.add.apply(this, arguments);
+     };
+    
+     return constructor;
+
+ }
+
+ //page 246,使用包装函数和例9-11的Function.prototype.extend()方法来重写NonNullSet
+ var NonNullSet = (function(){ //定义并立即调用这个函数
+    var superclass = Set; // 仅指定父类
+    return superclass.extend(function(){superclass.apply(this, arguments)},
+                             {
+                                 add:function(){
+                                     检查参数是否是null或undefined
+                                     for(var i =0; i < arguments.length; i++){
+                                        if(arguments[i] == null)
+                                            throw new Error("Can't add null or undefined");
+                                     }
+
+                                    //  调用父类的add()方法以实际执行实际插入操作
+                                    return superclass.prototype.add.apply(this, arguments);
+                                 }
+
+                             });
+
+
+ }());
 
 
 var s = new Set();
