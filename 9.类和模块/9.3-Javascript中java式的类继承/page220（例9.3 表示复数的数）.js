@@ -85,6 +85,11 @@ Complex.prototype.equals = function(that){
  //下划线前缀表明它是内部使用的，而不属于类的共有API的部分
  Complex._format = /^\{([^,])+,([^}]+)\}$/;
 
+//  page242
+ Complex.polar = function(r, theta){
+    return new Complex(r*Math.cos(theta), r*Math.sin(theta));
+ };
+
  var c = new Complex(2,3); //使用构造函数创建新的对象
  var d = new Complex(c.i,c.r) //用到了c的实例属性
  console.log(c.add(d).toString()); //用了实例的方法
