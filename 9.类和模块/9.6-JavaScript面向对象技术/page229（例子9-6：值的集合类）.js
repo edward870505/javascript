@@ -10,6 +10,27 @@ function Set(){ //这是一个构造函数
         this.add.apply(this,arguments);
 }
 
+//这是一个内部函数，用以将任意JavaScript值和唯一的字符串对应起来
+Set._v2s = function(val){
+    switch(val){
+        case undefined : return 'u'; //特殊的原始值
+        case null : return 'n'; //值只有一个字母
+        case true : return 't';// 代码
+        default:switch(typeof val){
+            case 'number' : return '#' + val;//数字都带有#前缀
+            case 'string' : return '"'+val;//字符串都带有"前缀
+                default:return '@'+objectId(val);//对象和函数有@前缀
+        }
+    }
+
+    function objectId(o){
+        var prop = "|**objectid**|";
+        if(!o.hasOwnProperty(prop))
+            o[prop] = Set._v2s.next++;
+        return o[prop];
+    }
+}
+
 //将每个参数都添加至集合中
 Set.prototype.add = function(){
     for(var i=0; i<arguments.length;i++){//遍历每个参数
@@ -158,7 +179,7 @@ function defineSubClass(superClass,//父类的构造函数
                         statics)
 {
     // 建立子类的原型对象
-    constructor.prototype = inherit(superclass.prototype); 
+    constructor.prototype = inherit(superClass.prototype); 
     constructor.prototype.constructor = constructor;
     // 像对常规类一样复制方法和类属性
     if(methods) Extend(constructor.prototype, methods);
@@ -216,26 +237,7 @@ SetFromArray.prototype = Set.prototype;
 var s = new SetFromArray([1,2,3]);
 console.log(s instanceof Set);
 
-//这是一个内部函数，用以将任意JavaScript值和唯一的字符串对应起来
-Set._v2s = function(val){
-    switch(val){
-        case undefined : return 'u'; //特殊的原始值
-        case null : return 'n'; //值只有一个字母
-        case true : return 't';// 代码
-        default:switch(typeof val){
-            case 'number' : return '#' + val;//数字都带有#前缀
-            case 'string' : return '"'+val;//字符串都带有"前缀
-                default:return '@'+objectId(val);//对象和函数有@前缀
-        }
-    }
 
-    function objectId(o){
-        var prop = "|**objectid**|";
-        if(!o.hasOwnProperty(prop))
-            o[prop] = Set._v2s.next++;
-        return o[prop];
-    }
-}
 
 Set._v2s.next = 100; //设置初始id的值
 
@@ -245,6 +247,7 @@ Set.prototype.toJSON = Set.prototype.toArray
 
 // 也可以通过父类构造函数的方法来做到这一点
 Function.prototype.extend = function(constructor,methods,statics){
+    console.log(this);
     return defineSubClass(this,constructor,methods,statics);
 }
 
@@ -264,7 +267,7 @@ console.log(new SimpleRange(1,3));
 
 // 例9-12：SingletonSet：一个简单的子类
 // 构造函数
-function SingletionSet(member){
+function SingletonSet(member){
     this.member = member;// 记住集合中这个唯一的成员
     // 创建一个原型对象，这个原型对象继承自Set的原型
     SingletionSet.prototype = inherit(Set.prototype);
@@ -279,7 +282,7 @@ function SingletionSet(member){
         // SingletonSet的实例永远只有一个元素
         size:function(){return 1},
         // 这个方法只调用一次，传入这个集合的唯一成员
-        foreach:function(f,context){f.call(context,this.member);};,
+        foreach:function(f,context){f.call(context,this.member);},
         // contains()方法只需检查传入的值是否匹配这个集合唯一的成员即可
         contains:function(x){
             return x === this.member;
@@ -368,6 +371,158 @@ NonNullSet.prototype.add = function(){
 
 
  }());
+
+//  page247 例9-13：使用组合代替继承的集合的实现
+/**
+ * 实现一个FilterSet,它包装某 个指定的集合对象
+ * 并对传入add()方法的值用用了某种指定的过滤器
+ * '范围'类中其他所有的核心方法延续到包装后的实例中
+ */
+var FilterSet = Set.extend(
+    function FilterSet(set, filter){//构造函数
+        this.set = set;
+        this.filter = filter;
+    },
+    {//实例方法
+     add:function(){
+        if(this.filter){
+            //如果已有过滤器，直接使用它
+            for(var i =0; i<arguments.length; i++){
+                var v = arguments[i];
+                if(!this.filter(v)){
+                    throw new Error('FilteredSet: value'+v+'rejected by filter');
+                }
+            }
+            //调用set中的add()方法
+            this.set.add.apply(this.set,arguments);
+            return this;
+        }
+     },
+    //  剩下的方法都保持不变
+    remove:function(){
+        this.set.rempve.apply(this.set,arguments);
+        return this;
+    },
+    contains:function(v){return this.set.contains(v);},
+    size:function(){return this.set.size();},
+    foreach:function(f,c){this.set.foreach(f,c)}
+    }
+);
+
+
+// 例9-16：抽象类和非抽象类的层次结构
+// 这个函数可以用做任何抽象方法
+function abstractmethod(){
+    throw new Error("Can't instantiate abstract classes");
+}
+
+/**
+ * AbstractSet类定义了一个抽象方法:contains()
+ */
+function AbstractSet(){ throw new Error("Can't instantiate abstract classes");}
+AbstractSet.prototype.contains = abstractmethod;
+
+/**
+ * NotSet是AbstractSet的非抽象子类
+ * 所有不在其集合中的成员都在这个集合中
+ * 因为它是在其他集合不可写的条件下定义的
+ * 同事由于它的成员是无限个，因此它是不可枚举的
+ * 我们只能用它来检测元素成员的归属情况
+ */
+
+ var NotSet = AbstractSet.extend(
+     function NotSet(set){this.set = set;},
+     {
+         contains: function(x){return !this.set.contains(x)},
+         toString:function(x){return '~'+this.set.toString();},
+         equals:function(that){
+             return that instanceof NotSet && this.set.equals(that.set);
+         }
+
+     }
+ );
+
+ /**
+  * AbstractEnumerableSet 是Abstract的一个抽象子类
+  * 它定义了抽象方法size()和foreach()
+  * 然后实现了非抽象方法isEmpty()、toArray()、to[Locale]String()和equals()方法
+  * 子类实现了contains()、size()和foreach()，这个三个方法可以很轻易地调用这5个非抽象方法
+  */
+
+  var AbstractEnumerableSet = AbstractSet.extend(
+      function(){throw new Error("Can't instantiate abstract classed");},
+      {
+          size:abstractmethod,
+          foreach:abstractmethod,
+          isEmpty:function(){return this.size()==0;},
+          toString:function(){
+              var s = '{', i=0;
+              this.foreach(function(v){
+                                if(i++>0) s+= ', ';
+                                s +=v;
+                            });
+              return s + '}';
+          },
+          toLocalseString: function(){
+              var s = '{', i = 0;
+              this.foreach(
+                        function(v){
+                            if(i++>0) s+=v;
+                            if(v==null) s+= v;//null和undefined
+                            else s+=v.toLocaleString();//其他情况
+                        }
+                    );
+              return s+'}';
+          },
+          toArray:function(){
+              var a = [];
+              this.foreach(function(v){a.push(v);});
+              return a;
+          },
+          equals:function(that){
+            if(! (that instanceof AbstractEnumerableSet)) return false;
+            //  如果他们的大小不同，则它们不相等
+            if(this.size()!=that.size()) return false;
+            // 检查每一个元素是否也在that中
+
+            try{
+                this.foreach(function(v){if(!that.contains(v)) throw false;});
+                return true;//所有的元素都匹配；集合相等
+            }catch(x){
+                if(x===false) return false;//集合不相等
+                throw x;//发生了其他异常：重新抛出异常
+            }
+          }
+      }
+  );
+
+  /**
+   * SingletonSet是AbstractEnumerableSet的非抽象子类
+   * singleton集合是只读的，它只包含一个成员
+   */
+  var SingletionSet = AbstractEnumerableSet.extend(
+      function SingletonSet(member) {
+          this.member = member;
+      },
+      {
+          contains:function(x){return x === this.member;},
+          size:function(){return 1},
+          foreach:function(f,ctx){f.call(ctx, this.member)}
+      }
+  );
+  
+  /**
+   * 
+   */
+
+
+
+
+
+
+
+
+
 
 
 var s = new Set();
