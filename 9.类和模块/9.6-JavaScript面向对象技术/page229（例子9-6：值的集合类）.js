@@ -512,8 +512,67 @@ AbstractSet.prototype.contains = abstractmethod;
   );
   
   /**
-   * 
+   *  AbstractWritableSet是AbstractEnumerableSet的抽象子类
+   * 它定义了抽象方法add()和remove()
+   * 然后实现了非抽象方法union()、intersection()和difference()
    */
+
+   var AbstractWritableSet = AbstractEnumerableSet.extend(
+       function(){throw new Error("Can't instantiate abstract classes");},
+       {
+          add:abstractmethod,
+          remove:abstractmethod, 
+          union:function(that){
+              var self = this;
+              this.foreach(function(v){self.add(v);});
+              return this;
+          },
+          intersection:function(that){
+              var self = this;
+              this.foreach(function(v){if(!that.contains(v)) self.remove(v)});
+              return this;
+          },
+          difference:function(that){
+            var self = this;
+            that.foreach(function(v){self.remove(v);});
+            return this;
+          }
+       }
+   );
+
+   /**
+    * ArraySet是AbstractWritableSet的非抽象子类
+    * 它以数组的形式表示集合中的元素
+    * 对于它的contains()方法使用了数组的线性查找
+    * 因为contains()方法的算法复杂度是O（n）而不是O(1)
+    * 它非常适用于相对小型的集合，注意，这里的实现用到了ES5的数组方法indexOf和forEach()
+    */
+   var ArraySet = AbstractWritableSet.extend(
+       function ArraySet(){
+           this.values = [];
+           this.add.apply(this, arguments);
+       },
+       {
+           contains:function(v){return this.values.indexOf(v)!=-1;},
+           size:function(){return this.values.length;},
+           foreach:function(f,c){this.values.forEach(f,c);},
+           add:function(){
+               for(var i =0; i< arguments.length; i++){
+                var arg = arguments[i];
+                if(!this.contains(arg)) this.values.push(arg);
+               }
+               return this;
+           },
+           remove:function(){
+               for(var i=0; i<arguments.length;i++){
+                   var p = this.values.indexOf(arguments[i]);
+                   if(p==-1) continue;
+                   this.values.splice(p,1);
+               }
+               return this;
+           }
+       }
+   );
 
 
 
