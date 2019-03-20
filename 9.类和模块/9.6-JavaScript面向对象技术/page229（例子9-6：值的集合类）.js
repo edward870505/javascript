@@ -85,7 +85,6 @@ Set.prototype.equals = function(that){
         throw x;// 重新抛出异常
     }
 
-    
 }
 
 
@@ -179,7 +178,7 @@ function defineSubClass(superClass,//父类的构造函数
                         statics)
 {
     // 建立子类的原型对象
-    constructor.prototype = inherit(superClass.prototype); 
+    constructor.prototype = inherit(superClass.prototype);
     constructor.prototype.constructor = constructor;
     // 像对常规类一样复制方法和类属性
     if(methods) Extend(constructor.prototype, methods);
@@ -212,7 +211,7 @@ extend(Set.prototype,{
         var a = [];
         this.foreach(function(v){a.push(v)});
         return a;
-    }   
+    }
 });
 
 
@@ -252,7 +251,7 @@ Function.prototype.extend = function(constructor,methods,statics){
 }
 
 //这是Range类的另一个实现
-var SimpleRange = 
+var SimpleRange =
     defineClass(function(f,t){this.f =f;this.t=t;},
         {
             includes:function(x){return this.f<=x&&x<=this.t;},
@@ -510,14 +509,14 @@ AbstractSet.prototype.contains = abstractmethod;
           foreach:function(f,ctx){f.call(ctx, this.member)}
       }
   );
-  
+
   /**
-   *  AbstractWritableSet是AbstractEnumerableSet的抽象子类
+   *  是AbstractEnumerableSet的抽象子类
    * 它定义了抽象方法add()和remove()
    * 然后实现了非抽象方法union()、intersection()和difference()
    */
 
-   var AbstractWritableSet = AbstractEnumerableSet.extend(
+   var  = AbstractEnumerableSet.extend(
        function(){throw new Error("Can't instantiate abstract classes");},
        {
           add:abstractmethod,
@@ -574,17 +573,77 @@ AbstractSet.prototype.contains = abstractmethod;
        }
    );
 
+// 例9-22：StringSet:利用ECMAScript5的特性定义的子类
+function StringSet(){
+    this.set = Object.create(null);
+    this.n = 0;
+    this.add.apply(this,arguments);
+}
 
+// 注意，使用Object.create()可以继承父类的原型
+// 而且可以定义单独调用的方法，因为哦们没有指定属性的可写性、可枚举性和可配置性
+// 因此这些属性特性的默认值都是false
+// 只读方法让这个类难于子类化（继承）
+StringSet.prototype = Object.create(AbstractWritableSet.prtotype,{
+    constructor:{value:StringSet},
+    contains:{value:function(x){return x in this.set;}},
+    size:{value:function(x){return this.n;}},
+    foreach:{value:function(f,c){Object.keys(this.set).forEach(f,c);}},
+    add:{
+        value:function(){
+            for(var i=0;i<arguments.length;i++){
+                if(!(arguments[i] in this.set)){
+                    this.set[arguments[i]] = true;
+                    this.n++;
+                }
+            }
+            return this;
+        }
+    },
+    remove:{
+        value:function(){
+            for(var i = 0; i<arguments.length;i++){
+                if(arguments[i] in this.set){
+                    delete this.set[arguments[i]];
+                    this.n--;
+                }
+            }
+            return this;
+        }
+    }
+});
 
+// page252 例9-17：定义不可枚举的属性
+// 将代码包装在一个匿名函数中，这样定义的变量就在这个函数作用域内
+(function(){
+    // 定义一个不可枚举的属性objectId,它可以被所有对象继承
+    // 当读取这个属性调用getter函数
+    // 它没有定义setter，因此它只是只读的
+    // 它是不可配置的，因此它是不能删除的
+    Object.defineProperty(Object.prototype, 'objectId',{
+                            get:idGetter,
+                            enumerable:false,
+                            configurable:false
+                        });
+    // 当读取objectId的时候直接调用这个getter函数
+    function idGetter(){//getter函数返回该id
+        if(!(idprop in this)){//如果对象中不存在id
+            if(Object.isExtensible(this))//并且可以增加属性
+                throw Error("Can't define id for nonextensible objects");
+            Object.defineProperty(this, idprop, {
+                                       value:nextid++,//给它一个值
+                                       writable:false,//只读的
+                                       enumerable:false,//不可枚举的
+                                       configurable:false  //不可删除的
+                                });
+            return this[idprop];// 返回已有的或新的值
 
+        }
+    }
 
+    // idGetter用到了这些变量，这些都属于私有变量
+    var idprop = "|**objectId**|"; //假设这个属性没有用到
+    var nextid = 1; //给它设置初始值
+}());//立即执行这个包装函数
 
-
-
-
-
-
-var s = new Set();
-s.add(1,'abc',{x:1});
-console.log(s);
 
